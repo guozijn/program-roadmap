@@ -35,7 +35,7 @@ cp .env.example .env.local
 # Edit .env.local and set NEXTAUTH_SECRET to a strong random string
 
 # 3. Run migrations to create the database schema
-npx prisma migrate deploy
+npm run db:migrate
 
 # 4. Seed with sample data
 npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
@@ -107,7 +107,13 @@ NEXTAUTH_URL        = https://your-domain.vercel.app
 ```
 
 ### 4. Build Command
-No extra configuration needed — `npm run build` already runs `prisma generate && prisma migrate deploy && next build`.
+Use `npm run build` for app builds only. Database migrations now run separately via `npm run db:migrate`.
+
+Recommended deploy order:
+```bash
+npm run db:migrate
+npm run build
+```
 
 ### 5. Run Seed (first deploy only)
 After first deployment, run the seed via Vercel CLI:
