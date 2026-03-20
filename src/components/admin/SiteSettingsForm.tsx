@@ -59,11 +59,22 @@ export default function SiteSettingsForm({ initialSettings }: { initialSettings:
 
     try {
       const updates = Object.entries(settings).map(([key, value]) => ({ key, value }));
-      const res = await fetch("/api/settings", {
-        method: "PUT",
+      const requestInit = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
+      };
+
+      let res = await fetch("/api/settings", {
+        method: "PUT",
+        ...requestInit,
       });
+
+      if (res.status === 405) {
+        res = await fetch("/api/settings", {
+          method: "POST",
+          ...requestInit,
+        });
+      }
 
       if (res.ok) {
         setSaved(true);

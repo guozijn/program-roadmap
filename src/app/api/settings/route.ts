@@ -9,7 +9,7 @@ export async function GET() {
   return NextResponse.json(settings);
 }
 
-export async function PUT(req: NextRequest) {
+async function saveSettings(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -32,4 +32,12 @@ export async function PUT(req: NextRequest) {
   revalidatePath("/industry");
 
   return NextResponse.json(results);
+}
+
+export async function PUT(req: NextRequest) {
+  return saveSettings(req);
+}
+
+export async function POST(req: NextRequest) {
+  return saveSettings(req);
 }
