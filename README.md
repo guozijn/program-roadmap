@@ -35,10 +35,10 @@ cp .env.example .env.local
 # Edit .env.local and set NEXTAUTH_SECRET to a strong random string
 
 # 3. Run migrations to create the database schema
-DATABASE_URL="file:./prisma/dev.db" npx prisma migrate deploy
+npx prisma migrate deploy
 
 # 4. Seed with sample data
-DATABASE_URL="file:./prisma/dev.db" npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
+npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
 
 # 5. Start development server
 npm run dev

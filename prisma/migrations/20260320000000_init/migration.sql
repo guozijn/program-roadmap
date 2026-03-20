@@ -1,25 +1,29 @@
 -- CreateTable
 CREATE TABLE "AdminUser" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AdminUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "SiteSettings" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "value" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SiteSettings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Program" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -29,13 +33,15 @@ CREATE TABLE "Program" (
     "published" BOOLEAN NOT NULL DEFAULT true,
     "heroImage" TEXT,
     "overview" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Program_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Course" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "programId" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -45,25 +51,27 @@ CREATE TABLE "Course" (
     "courseType" TEXT NOT NULL DEFAULT 'CORE',
     "units" INTEGER NOT NULL DEFAULT 3,
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Course_programId_fkey" FOREIGN KEY ("programId") REFERENCES "Program" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Course_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "CareerOutcome" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "programId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
     "icon" TEXT NOT NULL DEFAULT 'briefcase',
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "CareerOutcome_programId_fkey" FOREIGN KEY ("programId") REFERENCES "Program" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "CareerOutcome_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Alumni" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "company" TEXT NOT NULL,
@@ -74,14 +82,15 @@ CREATE TABLE "Alumni" (
     "featured" BOOLEAN NOT NULL DEFAULT false,
     "linkedin" TEXT,
     "programId" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Alumni_programId_fkey" FOREIGN KEY ("programId") REFERENCES "Program" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Alumni_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "IndustryPartner" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
     "logo" TEXT,
@@ -89,8 +98,10 @@ CREATE TABLE "IndustryPartner" (
     "category" TEXT NOT NULL DEFAULT 'Technology',
     "tier" TEXT NOT NULL DEFAULT 'SILVER',
     "published" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "IndustryPartner_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -101,3 +112,12 @@ CREATE UNIQUE INDEX "SiteSettings_key_key" ON "SiteSettings"("key");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Program_slug_key" ON "Program"("slug");
+
+-- AddForeignKey
+ALTER TABLE "Course" ADD CONSTRAINT "Course_programId_fkey" FOREIGN KEY ("programId") REFERENCES "Program"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CareerOutcome" ADD CONSTRAINT "CareerOutcome_programId_fkey" FOREIGN KEY ("programId") REFERENCES "Program"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Alumni" ADD CONSTRAINT "Alumni_programId_fkey" FOREIGN KEY ("programId") REFERENCES "Program"("id") ON DELETE SET NULL ON UPDATE CASCADE;
