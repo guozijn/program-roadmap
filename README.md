@@ -2,7 +2,7 @@
 
 A web-based platform helping students locate information about their studies, programs, industry and alumni — and a marketing tool for prospective students.
 
-Built with **Next.js 14**, **Prisma**, **NextAuth**, and **Tailwind CSS**. Designed in the style of [Adelaide University](https://adelaideuni.edu.au/).
+Built with **Next.js 14**, **Prisma**, **NextAuth**, and **Tailwind CSS**. Designed to match the Adelaide University 2026 brand identity.
 
 ---
 
@@ -72,12 +72,15 @@ src/
 ├── components/
 │   ├── layout/            # Navbar, Footer, AdminSidebar
 │   ├── roadmap/           # Interactive roadmap visualization
-│   └── admin/             # Admin forms and tables
+│   ├── admin/             # Admin forms and tables
+│   └── ui/                # Shared UI components and SVG icon library
 ├── lib/
 │   ├── prisma.ts          # Database client
 │   ├── auth.ts            # NextAuth config
 │   └── utils.ts           # Utilities
 └── middleware.ts           # Route protection
+public/
+└── au-logo-dark-blue-horizontal.svg   # Official Adelaide University logo
 ```
 
 ---
@@ -133,12 +136,18 @@ DATABASE_URL=<your-postgres-url> npx ts-node --compiler-options '{"module":"Comm
 
 ## Design
 
-Inspired by [Adelaide University](https://adelaideuni.edu.au/):
-- **Primary colour**: Deep Navy `#002147`
-- **Accent colour**: Gold `#FFB81C`
-- Clean institutional typography with Inter font
-- Card-based layouts with subtle shadows
-- Responsive mobile-first design
+Follows the **Adelaide University 2026 brand identity**:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| Navy | `#140F50` | Primary dark — headers, nav, sidebar |
+| Blue Ribbon | `#1448FF` | CTA / accent — buttons, links, active states |
+| Blue Marguerite | `#6956CC` | Secondary purple — specialization badges |
+| Spanish White | `#F9F2E6` | Warm cream — section backgrounds |
+
+- Official university logo (`au-logo-dark-blue-horizontal.svg`) in Navbar and Footer
+- SVG icon library throughout — no emoji
+- Inter font, card-based layouts, mobile-first responsive design
 
 ---
 
@@ -146,8 +155,8 @@ Inspired by [Adelaide University](https://adelaideuni.edu.au/):
 
 | Type | Colour | Description |
 |------|--------|-------------|
-| Core | Navy | Mandatory foundational courses |
+| Core | Navy `#140F50` | Mandatory foundational courses |
 | Elective | Gray | Student-chosen courses |
-| Specialization | Teal | Advanced stream courses |
-| Capstone | Gold | Final-year major project |
-| Industry | Green | Courses delivered with industry partners |
+| Specialization | Purple `#6956CC` | Advanced stream courses |
+| Capstone | Blue `#1448FF` | Final-year major project |
+| Industry | Teal | Courses delivered with industry partners |
