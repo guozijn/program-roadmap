@@ -34,8 +34,8 @@ npm install
 cp .env.example .env.local
 # Edit .env.local and set NEXTAUTH_SECRET to a strong random string
 
-# 3. Create database and push schema
-DATABASE_URL="file:./prisma/dev.db" npx prisma db push
+# 3. Run migrations to create the database schema
+DATABASE_URL="file:./prisma/dev.db" npx prisma migrate deploy
 
 # 4. Seed with sample data
 DATABASE_URL="file:./prisma/dev.db" npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
@@ -106,11 +106,8 @@ NEXTAUTH_SECRET     = your-secret-32-char-string (openssl rand -base64 32)
 NEXTAUTH_URL        = https://your-domain.vercel.app
 ```
 
-### 4. Update Build Command
-In Vercel project settings, set:
-```
-Build Command: prisma generate && prisma migrate deploy && next build
-```
+### 4. Build Command
+No extra configuration needed — `npm run build` already runs `prisma generate && prisma migrate deploy && next build`.
 
 ### 5. Run Seed (first deploy only)
 After first deployment, run the seed via Vercel CLI:
