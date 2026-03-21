@@ -19,10 +19,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
-      {/* Brand accent bar */}
-      <div className="h-0.5 bg-brand" />
-
+    <header className="sticky top-0 z-50 bg-navy">
       <nav className="container-page h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 flex-shrink-0 group">
@@ -32,9 +29,9 @@ export default function Navbar() {
             width={160}
             height={38}
             priority
-            className="h-9 w-auto"
+            className="h-9 w-auto brightness-0 invert"
           />
-          <span className="hidden sm:block text-navy font-semibold text-sm border-l border-gray-200 pl-3">
+          <span className="hidden sm:block text-white font-semibold text-sm border-l border-white/20 pl-3">
             Program Roadmap
           </span>
         </Link>
@@ -48,13 +45,13 @@ export default function Navbar() {
               className={cn(
                 "relative px-4 py-1.5 text-sm font-medium transition-colors",
                 pathname === link.href
-                  ? "text-brand"
-                  : "text-gray-600 hover:text-navy"
+                  ? "text-white"
+                  : "text-white/70 hover:text-white"
               )}
             >
               {link.label}
               {pathname === link.href && (
-                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-brand rounded-full" />
+                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-white rounded-full" />
               )}
             </Link>
           ))}
@@ -63,7 +60,7 @@ export default function Navbar() {
         {/* Mobile trigger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
           aria-label="Toggle menu"
         >
           {menuOpen ? <X /> : <Menu />}
@@ -72,7 +69,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1 shadow-lg">
+        <div className="md:hidden border-t border-white/10 bg-navy px-4 py-3 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -81,8 +78,8 @@ export default function Navbar() {
               className={cn(
                 "flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                 pathname === link.href
-                  ? "text-brand bg-brand-50"
-                  : "text-gray-700 hover:text-navy hover:bg-gray-50"
+                  ? "text-white bg-white/10"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
               )}
             >
               {link.label}

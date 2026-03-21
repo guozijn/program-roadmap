@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import {
   GraduationCap, BookOpen, Globe, Handshake,
@@ -47,42 +48,25 @@ export default async function HomePage() {
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-navy min-h-[580px] flex items-center">
-        {/* Geometric background */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          {/* Large circle, top right */}
-          <div
-            className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full border border-white/5"
-            style={{ background: "radial-gradient(circle, rgba(20,72,255,0.15) 0%, transparent 70%)" }}
-          />
-          {/* Small circle, bottom left */}
-          <div
-            className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(105,86,204,0.2) 0%, transparent 70%)" }}
-          />
-          {/* Grid dots */}
-          <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1" fill="white" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#dots)" />
-          </svg>
-        </div>
+      <section className="relative overflow-hidden min-h-[620px] flex items-center">
+        {/* Background campus image */}
+        <Image
+          src="/images/hero-campus-main.jpg"
+          alt="Adelaide University North Terrace Campus"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-navy/70" />
+        {/* Subtle gradient overlay for text readability */}
 
         <div className="container-page relative z-10 py-24">
           <div className="max-w-2xl">
-            {/* Label */}
-            <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 rounded-full px-4 py-1.5 text-white/60 text-xs font-medium tracking-wide mb-8">
-              <span className="w-1.5 h-1.5 bg-brand rounded-full" />
-              Adelaide University · Program Roadmap
-            </div>
-
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.12] mb-6 tracking-tight">
               {s["home.hero.title"] || "Chart Your Path to Success"}
             </h1>
-            <p className="text-white/60 text-lg leading-relaxed mb-10 max-w-xl">
+            <p className="text-white/70 text-lg leading-relaxed mb-10 max-w-xl">
               {s["home.hero.subtitle"] || "Explore programs, connect with industry, and discover where your degree can take you."}
             </p>
 

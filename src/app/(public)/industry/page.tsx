@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { IndustryIcon } from "@/components/ui/Icons";
 
@@ -96,8 +97,16 @@ export default async function IndustryPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-navy py-16 md:py-20">
-        <div className="container-page">
+      <section className="relative overflow-hidden min-h-[280px] flex items-center">
+        <Image
+          src="/images/banner-industry.jpg"
+          alt="Adelaide University Industry Partners"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        <div className="absolute inset-0 bg-navy/70" />
+        <div className="container-page relative z-10 py-16 md:py-20">
           <nav className="text-white/60 text-sm mb-4">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span className="mx-2">/</span>

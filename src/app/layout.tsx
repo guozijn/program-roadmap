@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Roboto_Serif, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const robotoSerif = Roboto_Serif({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-roboto-serif",
+});
+
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
+  variable: "--font-barlow-condensed",
 });
 
 export const metadata: Metadata = {
@@ -29,8 +36,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={`${robotoSerif.variable} ${barlowCondensed.variable}`}>
+      <body className={robotoSerif.className}>{children}</body>
     </html>
   );
 }

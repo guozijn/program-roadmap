@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 
@@ -48,8 +49,16 @@ export default async function ProgramsPage() {
   return (
     <>
       {/* Page Header */}
-      <section className="bg-navy py-16 md:py-20">
-        <div className="container-page">
+      <section className="relative overflow-hidden min-h-[280px] flex items-center">
+        <Image
+          src="/images/banner-programs.jpg"
+          alt="Adelaide University Programs"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        <div className="absolute inset-0 bg-navy/70" />
+        <div className="container-page relative z-10 py-16 md:py-20">
           <nav className="text-white/60 text-sm mb-4">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span className="mx-2">/</span>

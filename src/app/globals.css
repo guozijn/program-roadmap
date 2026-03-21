@@ -25,12 +25,13 @@
 
   body {
     @apply antialiased text-gray-900;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Roboto Serif', Georgia, serif;
     color: var(--color-text);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    font-family: var(--font-barlow-condensed), 'Barlow Condensed', sans-serif;
     color: var(--color-navy);
   }
 }

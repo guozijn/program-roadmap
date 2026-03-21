@@ -48,7 +48,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Roboto Serif", "Georgia", "serif"],
+        serif: ["Roboto Serif", "Georgia", "serif"],
+        condensed: ["var(--font-barlow-condensed)", "Barlow Condensed", "sans-serif"],
       },
       boxShadow: {
         card: "0 2px 16px rgba(20, 15, 80, 0.07)",
