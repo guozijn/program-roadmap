@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 
 interface Course {
   id: string;
@@ -26,6 +26,19 @@ interface RoadmapProps {
   careerOutcomes: CareerOutcome[];
   duration: string;
 }
+
+interface TooltipState {
+  course: Course;
+  left: number;
+  top: number;
+  arrowLeft: number;
+  placement: "top" | "bottom";
+}
+
+const TOOLTIP_WIDTH = 224;
+const TOOLTIP_OFFSET = 10;
+const TOOLTIP_SAFE_PADDING = 12;
+const TOOLTIP_MIN_TOP_SPACE = 180;
 
 const TYPE_STYLES: Record<string, { bg: string; border: string; text: string; label: string }> = {
   CORE: { bg: "bg-navy", border: "border-navy", text: "text-white", label: "Core" },
@@ -136,7 +149,8 @@ function AcademicCapIcon({ className }: { className?: string }) {
 }
 
 export default function RoadmapVisualization({ courses, careerOutcomes, duration }: RoadmapProps) {
-  const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
+  const [hoveredCourseId, setHoveredCourseId] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
   // Group courses by year and semester
   const years = Array.from(new Set(courses.map((c) => c.year))).sort();
@@ -145,6 +159,53 @@ export default function RoadmapVisualization({ courses, careerOutcomes, duration
     courses.filter((c) => c.year === year && c.semester === semester).sort((a, b) => a.sortOrder - b.sortOrder);
 
   const totalYears = parseInt(duration) || years.length;
+
+  useEffect(() => {
+    if (!tooltip) return;
+
+    const dismissTooltip = () => {
+      setHoveredCourseId(null);
+      setTooltip(null);
+    };
+
+    window.addEventListener("scroll", dismissTooltip, true);
+    window.addEventListener("resize", dismissTooltip);
+
+    return () => {
+      window.removeEventListener("scroll", dismissTooltip, true);
+      window.removeEventListener("resize", dismissTooltip);
+    };
+  }, [tooltip]);
+
+  const hideTooltip = () => {
+    setHoveredCourseId(null);
+    setTooltip(null);
+  };
+
+  const showTooltip = (course: Course, event: ReactMouseEvent<HTMLDivElement>) => {
+    setHoveredCourseId(course.id);
+
+    if (!course.description) {
+      setTooltip(null);
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const placement = rect.top > TOOLTIP_MIN_TOP_SPACE ? "top" : "bottom";
+    const left = Math.min(
+      Math.max(TOOLTIP_SAFE_PADDING, rect.left),
+      window.innerWidth - TOOLTIP_WIDTH - TOOLTIP_SAFE_PADDING
+    );
+    const anchorX = rect.left + Math.min(28, rect.width / 2);
+    const arrowLeft = Math.min(Math.max(20, anchorX - left), TOOLTIP_WIDTH - 20);
+    setTooltip({
+      course,
+      left,
+      top: placement === "top" ? rect.top - TOOLTIP_OFFSET : rect.bottom + TOOLTIP_OFFSET,
+      arrowLeft,
+      placement,
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -193,14 +254,14 @@ export default function RoadmapVisualization({ courses, careerOutcomes, duration
                       <div className="space-y-2">
                         {semCourses.map((course) => {
                           const style = TYPE_STYLES[course.courseType] || TYPE_STYLES.CORE;
-                          const isHovered = hoveredCourse === course.id;
+                          const isHovered = hoveredCourseId === course.id;
 
                           return (
                             <div
                               key={course.id}
                               className="course-node relative group"
-                              onMouseEnter={() => setHoveredCourse(course.id)}
-                              onMouseLeave={() => setHoveredCourse(null)}
+                              onMouseEnter={(event) => showTooltip(course, event)}
+                              onMouseLeave={hideTooltip}
                             >
                               <div
                                 className={`rounded-lg border ${style.border} ${isHovered ? style.bg : "bg-white"}
@@ -224,21 +285,6 @@ export default function RoadmapVisualization({ courses, careerOutcomes, duration
                                   </span>
                                 </div>
                               </div>
-
-                              {/* Tooltip */}
-                              {isHovered && course.description && (
-                                <div className="absolute bottom-full left-0 mb-2 w-56 bg-navy text-white text-xs rounded-lg p-3 shadow-lg z-10">
-                                  <p className="font-semibold mb-1">{course.title}</p>
-                                  <p className="text-white/80 leading-relaxed">{course.description}</p>
-                                  <div className="flex justify-between mt-2 pt-2 border-t border-white/20 text-white/60">
-                                    <span>{style.label}</span>
-                                    <span>{course.units} units</span>
-                                  </div>
-                                  <div className="absolute bottom-0 left-4 translate-y-full">
-                                    <div className="border-4 border-transparent border-t-navy" />
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           );
                         })}
@@ -289,6 +335,32 @@ export default function RoadmapVisualization({ courses, careerOutcomes, duration
           </div>
         </div>
       </div>
+
+      {tooltip && (
+        <div
+          className={`pointer-events-none fixed z-50 w-56 rounded-lg bg-navy p-3 text-xs text-white shadow-lg animate-fade-in ${
+            tooltip.placement === "top" ? "-translate-y-full" : ""
+          }`}
+          style={{ top: tooltip.top, left: tooltip.left, width: TOOLTIP_WIDTH }}
+        >
+          <p className="mb-1 font-semibold">{tooltip.course.title}</p>
+          <p className="leading-relaxed text-white/80">{tooltip.course.description}</p>
+          <div className="mt-2 flex justify-between border-t border-white/20 pt-2 text-white/60">
+            <span>{(TYPE_STYLES[tooltip.course.courseType] || TYPE_STYLES.CORE).label}</span>
+            <span>{tooltip.course.units} units</span>
+          </div>
+
+          {tooltip.placement === "top" ? (
+            <div className="absolute top-full -translate-x-1/2" style={{ left: tooltip.arrowLeft }}>
+              <div className="border-4 border-transparent border-t-navy" />
+            </div>
+          ) : (
+            <div className="absolute bottom-full -translate-x-1/2" style={{ left: tooltip.arrowLeft }}>
+              <div className="border-4 border-transparent border-b-navy" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Mobile: vertical summary */}
       <div className="md:hidden">
