@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AdminNotice from "@/components/admin/AdminNotice";
+import { normalizeAlumniInput, validateAlumniInput } from "@/lib/admin-validation";
 
 interface Program { id: string; title: string; }
 
@@ -30,11 +32,19 @@ export default function AlumniForm({ initialData, programs }: Props) {
     bio: "", testimonial: "", featured: false, linkedin: "", programId: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [notice, setNotice] = useState<{ tone: "success" | "error"; message: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setNotice(null);
+
+    const normalizedForm = normalizeAlumniInput(form);
+    const validationError = validateAlumniInput(normalizedForm);
+    if (validationError) {
+      setNotice({ tone: "error", message: validationError });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -44,19 +54,20 @@ export default function AlumniForm({ initialData, programs }: Props) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, programId: form.programId || null }),
+        body: JSON.stringify({ ...normalizedForm, programId: normalizedForm.programId || null }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "An error occurred");
+        setNotice({ tone: "error", message: data.error || "An error occurred" });
         return;
       }
 
+      setNotice({ tone: "success", message: initialData ? "Alumni saved successfully." : "Alumni created successfully." });
       router.push("/admin/dashboard/alumni");
       router.refresh();
     } catch {
-      setError("Failed to save alumni");
+      setNotice({ tone: "error", message: "Failed to save alumni" });
     } finally {
       setLoading(false);
     }
@@ -64,7 +75,7 @@ export default function AlumniForm({ initialData, programs }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
+      {notice && <AdminNotice tone={notice.tone} message={notice.message} />}
 
       <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-5">
         <div className="grid md:grid-cols-2 gap-5">
@@ -91,8 +102,10 @@ export default function AlumniForm({ initialData, programs }: Props) {
           </div>
           <div>
             <label className="form-label">LinkedIn URL</label>
-            <input value={form.linkedin} onChange={(e) => setForm((f) => ({ ...f, linkedin: e.target.value }))}
+            <input type="text" inputMode="url" autoCapitalize="off" spellCheck={false}
+              value={form.linkedin} onChange={(e) => setForm((f) => ({ ...f, linkedin: e.target.value }))}
               className="form-input" placeholder="https://linkedin.com/in/..." />
+            <p className="text-xs text-gray-400 mt-1">Optional. Please enter a valid website URL format.</p>
           </div>
           <div>
             <label className="form-label">Program</label>
