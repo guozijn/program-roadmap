@@ -1,44 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { slugify } from "@/lib/utils";
+import AdminNotice from "@/components/admin/AdminNotice";
+import {
+  type ProgramInput,
+  PROGRAM_DURATIONS,
+  PROGRAM_LEVELS,
+  normalizeProgramInput,
+  validateProgramInput,
+} from "@/lib/admin-validation";
 
-interface Program {
+interface Program extends ProgramInput {
   id?: string;
-  title: string;
-  slug: string;
-  description: string;
-  level: string;
-  duration: string;
-  overview: string;
-  featured: boolean;
-  published: boolean;
 }
 
 interface Props {
   initialData?: Program;
 }
 
-const LEVELS = ["Bachelor", "Masters", "PhD", "Diploma"];
-const DURATIONS = ["1 year", "1.5 years", "2 years", "3 years", "4 years"];
+const EMPTY_PROGRAM: ProgramInput = {
+  title: "",
+  slug: "",
+  description: "",
+  level: "Bachelor",
+  duration: "3 years",
+  overview: "",
+  featured: false,
+  published: true,
+};
 
 export default function ProgramForm({ initialData }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState<Program>(
-    initialData || {
-      title: "",
-      slug: "",
-      description: "",
-      level: "Bachelor",
-      duration: "3 years",
-      overview: "",
-      featured: false,
-      published: true,
-    }
+    initialData || EMPTY_PROGRAM
   );
+  const [savedSnapshot, setSavedSnapshot] = useState<ProgramInput>(normalizeProgramInput(initialData || EMPTY_PROGRAM));
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [notice, setNotice] = useState<{ tone: "success" | "info" | "error"; message: string } | null>(null);
+
+  const normalizedForm = normalizeProgramInput(form);
+  const hasUnsavedChanges = JSON.stringify(normalizedForm) !== JSON.stringify(savedSnapshot);
+
+  useEffect(() => {
+    if (searchParams.get("status") === "created") {
+      setNotice({ tone: "success", message: "Program created successfully." });
+    }
+  }, [searchParams]);
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const title = e.target.value;
@@ -47,7 +57,19 @@ export default function ProgramForm({ initialData }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setNotice(null);
+
+    const validationError = validateProgramInput(normalizedForm);
+    if (validationError) {
+      setNotice({ tone: "error", message: validationError });
+      return;
+    }
+
+    if (initialData && !hasUnsavedChanges) {
+      setNotice({ tone: "info", message: "No changes detected. There is nothing new to save." });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -57,20 +79,29 @@ export default function ProgramForm({ initialData }: Props) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(normalizedForm),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "An error occurred");
+        setNotice({ tone: "error", message: data.error || "An error occurred" });
         return;
       }
 
       const program = await res.json();
-      router.push(`/admin/dashboard/programs/${program.id}`);
+      if (!initialData) {
+        router.push(`/admin/dashboard/programs/${program.id}?status=created`);
+        router.refresh();
+        return;
+      }
+
+      const savedProgram = normalizeProgramInput(program);
+      setForm({ id: initialData.id, ...savedProgram });
+      setSavedSnapshot(savedProgram);
+      setNotice({ tone: "success", message: "Program saved successfully." });
       router.refresh();
     } catch {
-      setError("Failed to save program");
+      setNotice({ tone: "error", message: "Failed to save program" });
     } finally {
       setLoading(false);
     }
@@ -78,9 +109,7 @@ export default function ProgramForm({ initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
-      )}
+      {notice && <AdminNotice tone={notice.tone} message={notice.message} />}
 
       <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-5">
         <h2 className="font-semibold text-gray-900">Program Details</h2>
@@ -106,8 +135,10 @@ export default function ProgramForm({ initialData }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
               className="form-input font-mono text-sm"
               placeholder="bachelor-computer-science"
+              pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
               required
             />
+            <p className="text-xs text-gray-400 mt-1">Use lowercase letters, numbers, and hyphens only.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -118,7 +149,7 @@ export default function ProgramForm({ initialData }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, level: e.target.value }))}
                 className="form-input"
               >
-                {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                {PROGRAM_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
               </select>
             </div>
             <div>
@@ -128,7 +159,7 @@ export default function ProgramForm({ initialData }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, duration: e.target.value }))}
                 className="form-input"
               >
-                {DURATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+                {PROGRAM_DURATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
           </div>
@@ -195,6 +226,9 @@ export default function ProgramForm({ initialData }: Props) {
           Cancel
         </button>
       </div>
+      {initialData && !hasUnsavedChanges && !loading && (
+        <p className="text-xs text-gray-400">All changes have been saved.</p>
+      )}
     </form>
   );
 }

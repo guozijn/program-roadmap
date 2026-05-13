@@ -92,8 +92,6 @@ export default async function IndustryPage() {
     partners: partners.filter((p) => p.tier === tier),
   })).filter((g) => g.partners.length > 0);
 
-  const categories = Array.from(new Set(partners.map((p) => p.category))).sort();
-
   return (
     <>
       {/* Header */}
@@ -134,18 +132,24 @@ export default async function IndustryPage() {
         </div>
       </section>
 
-      {/* Category filter */}
+      {/* Tier filter */}
       <section className="bg-gray-50 py-4 border-b border-gray-100 sticky top-16 z-40">
         <div className="container-page">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-            <span className="text-xs font-medium text-gray-500 flex-shrink-0">Category:</span>
+            <span className="text-xs font-medium text-gray-500 flex-shrink-0">Tier:</span>
             <a href="#all" className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-navy text-white">All</a>
-            {categories.map((cat) => (
-              <a key={cat} href={`#${cat.toLowerCase()}`} className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-gray-600 bg-white border border-gray-200 hover:border-navy hover:text-navy transition-colors">
-                <IndustryIcon category={cat} className="w-3.5 h-3.5" />
-                {cat}
-              </a>
-            ))}
+            {grouped.map(({ tier }) => {
+              const info = TIER_LABELS[tier];
+              return (
+                <a
+                  key={tier}
+                  href={`#${tier.toLowerCase()}`}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${info.badgeColor}`}
+                >
+                  {info.label.replace(" Partners", "")}
+                </a>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -156,7 +160,7 @@ export default async function IndustryPage() {
           {grouped.map(({ tier, partners: tierPartners }) => {
             const info = TIER_LABELS[tier];
             return (
-              <div key={tier}>
+              <div key={tier} id={tier.toLowerCase()}>
                 <div className="mb-8">
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-2xl font-bold text-navy">{info.label}</h2>
@@ -171,7 +175,6 @@ export default async function IndustryPage() {
                   {tierPartners.map((partner) => (
                     <div
                       key={partner.id}
-                      id={partner.category.toLowerCase()}
                       className={`card hover:shadow-card-hover transition-shadow border-l-4 ${info.color}`}
                     >
                       <div className="p-6">

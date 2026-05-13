@@ -3,24 +3,29 @@ import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSafeLinkedInUrl, normalizeAlumniInput, validateAlumniInput } from "@/lib/admin-validation";
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
+  const input = normalizeAlumniInput(body);
+  const validationError = validateAlumniInput(input);
+  if (validationError) return NextResponse.json({ error: validationError }, { status: 400 });
+
   const alumni = await prisma.alumni.update({
     where: { id: params.id },
     data: {
-      name: body.name,
-      role: body.role,
-      company: body.company,
-      graduationYear: Number(body.graduationYear),
-      bio: body.bio || "",
-      testimonial: body.testimonial || "",
-      featured: body.featured || false,
-      linkedin: body.linkedin || null,
-      programId: body.programId || null,
+      name: input.name,
+      role: input.role,
+      company: input.company,
+      graduationYear: input.graduationYear,
+      bio: input.bio,
+      testimonial: input.testimonial,
+      featured: input.featured,
+      linkedin: getSafeLinkedInUrl(input.linkedin),
+      programId: input.programId || null,
     },
   });
 

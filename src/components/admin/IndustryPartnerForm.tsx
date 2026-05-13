@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AdminNotice from "@/components/admin/AdminNotice";
+import {
+  PARTNER_CATEGORIES,
+  PARTNER_TIERS,
+  normalizePartnerInput,
+  validatePartnerInput,
+} from "@/lib/admin-validation";
 
 interface Partner {
   id?: string;
@@ -13,20 +20,25 @@ interface Partner {
   published: boolean;
 }
 
-const CATEGORIES = ["Technology", "Finance", "Healthcare", "Engineering", "Government", "Education", "Energy", "Retail", "Other"];
-const TIERS = ["GOLD", "SILVER", "BRONZE"];
-
 export default function IndustryPartnerForm({ initialData }: { initialData?: Partner }) {
   const router = useRouter();
   const [form, setForm] = useState<Partner>(initialData || {
     name: "", description: "", website: "", category: "Technology", tier: "SILVER", published: true,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [notice, setNotice] = useState<{ tone: "success" | "error"; message: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setNotice(null);
+
+    const normalizedForm = normalizePartnerInput(form);
+    const validationError = validatePartnerInput(normalizedForm);
+    if (validationError) {
+      setNotice({ tone: "error", message: validationError });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -36,19 +48,20 @@ export default function IndustryPartnerForm({ initialData }: { initialData?: Par
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(normalizedForm),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "An error occurred");
+        setNotice({ tone: "error", message: data.error || "An error occurred" });
         return;
       }
 
+      setNotice({ tone: "success", message: initialData ? "Industry partner saved successfully." : "Industry partner created successfully." });
       router.push("/admin/dashboard/industry");
       router.refresh();
     } catch {
-      setError("Failed to save partner");
+      setNotice({ tone: "error", message: "Failed to save partner" });
     } finally {
       setLoading(false);
     }
@@ -56,7 +69,7 @@ export default function IndustryPartnerForm({ initialData }: { initialData?: Par
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
+      {notice && <AdminNotice tone={notice.tone} message={notice.message} />}
 
       <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-5">
         <div className="grid md:grid-cols-2 gap-5">
@@ -68,19 +81,21 @@ export default function IndustryPartnerForm({ initialData }: { initialData?: Par
           <div>
             <label className="form-label">Category</label>
             <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="form-input">
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              {PARTNER_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
             <label className="form-label">Partnership Tier</label>
             <select value={form.tier} onChange={(e) => setForm((f) => ({ ...f, tier: e.target.value }))} className="form-input">
-              {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
+              {PARTNER_TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div className="md:col-span-2">
             <label className="form-label">Website URL</label>
-            <input value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
+            <input type="text" inputMode="url" autoCapitalize="off" spellCheck={false}
+              value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
               className="form-input" placeholder="https://company.com" />
+            <p className="text-xs text-gray-400 mt-1">Optional. Please enter a valid website URL format.</p>
           </div>
           <div className="md:col-span-2">
             <label className="form-label">Description</label>
